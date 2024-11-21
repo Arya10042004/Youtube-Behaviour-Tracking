@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Behavior Tracking</title>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #6a1b9a, #283593); /* Gradient from purple to blue */
+            font-family: 'Verdana', sans-serif;
+            text-align: center;
+            color: #ffffff; /* White text for better contrast */
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #ffffff; /* White color for better contrast */
+            margin-bottom: 20px;
+        }
+
+        label, input, button {
+            font-size: 1.2rem;
+            color: #ffffff; /* White color for better contrast */
+        }
+
+        input, button {
+            background-color: #ce93d8; /* Light purple for input fields */
+            border: none;
+            padding: 10px 15px;
+            margin-top: 10px;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        input:focus {
+            outline: none;
+            border: 2px solid #7b1fa2; /* Focus border in a deeper purple */
+        }
+
+        button {
+            cursor: pointer;
+            background-color: #7b1fa2; /* Deep purple for the button */
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #6a1b9a; /* Slightly darker on hover */
+        }
+
+        #player {
+            margin: 20px auto;
+            display: block;
+            max-width: 100%;
+            width: 640px;
+            height: 360px;
+            border: 2px solid #ffffff; /* White border around the player */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #videoDurations, #analytics {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 20px auto;
+            border-radius: 10px;
+            max-width: 640px;
+            text-align: left;
+        }
+
+        #videoDurations p, #analytics p {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 700px) {
+            #player {
+                width: 100%;
+                height: auto;
+            }
+
+            input, button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>ONE STEP CLOSER TO YOUR GOAL!</h1>
+
+    <!-- Input field for YouTube URL -->
+    <label for="youtubeUrl">Enter YouTube Video URL:</label><br>
+    <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=example">
+    <button onclick="loadVideo()">Load Video</button>
+
+    <!-- Player container -->
+    <div id="player"></div>
+
+    <!-- Container to display video durations at different speeds -->
+    <div id="videoDurations"></div>
+
+    <!-- Container to display analytics -->
+    <div id="analytics"></div>
+
+    <script>
+        let player;
+        let videoId = ''; // Variable to store the extracted video ID
+        let videoDuration = 0; // Store video duration in seconds
+        let totalTimeSpent = 0; // Total time spent by user (including pauses/replays)
+        let startTime = 0;
+        let playEvents = []; // Array to store play events (timestamps)
+        let pauseEvents = []; // Array to store pause events (timestamps)
+        let replayEvents = []; // Array to store replay events (objects with start/end)
+
+        // Function to extract video ID from the YouTube URL
+        function getVideoId(url) {
+            try {
+                const urlObj = new URL(url);
+                return urlObj.searchParams.get("v");
+            } catch (error) {
+                return null;
+            }
+        }
+
+        // Function to load the video based on user input
+        function loadVideo() {
+            const url = document.getElementById("youtubeUrl").value.trim();
+            videoId = getVideoId(url); // Extract and store the video ID
+
+            if (videoId) {
+                if (player) {
+                    player.loadVideoById(videoId);
+                } else {
+                    // Load the YouTube player with the provided video ID
+                    player = new YT.Player('player', {
+                        height: '360',
+                        width: '640',
+                        videoId: videoId, // Use the extracted video ID here
+                        events: {
+                            'onReady': onPlayerReady,
+                            'onStateChange': onPlayerStateChange
+                        }
+                    });
+                }
+            } else {
+                alert("Invalid YouTube URL. Please enter a valid URL containing a video ID.");
+            }
+        }
+
+        function onPlayerReady(event) {
+            videoDuration = player.getDuration(); // Get video duration in seconds
+            logVideoDurations(); // Log video durations at different playback speeds
+            displayVideoDurations(); // Display durations in the UI
+        }
+
+        function logVideoDurations() {
+            // Log total duration of the video at different playback speeds
+            console.log(`Total Duration at 1x: ${formatTime(videoDuration)}`);
+            console.log(`Total Duration at 2x: ${formatTime(videoDuration / 2)}`);
+            console.log(`Total Duration at 1.75x: ${formatTime(videoDuration / 1.75)}`);
+            console.log(`Total Duration at 1.5x: ${formatTime(videoDuration / 1.5)}`);
+            console.log(`Total Duration at 1.25x: ${formatTime(videoDuration / 1.25)}`);
+        }
+
+        function displayVideoDurations() {
+            const durationsDiv = document.getElementById("videoDurations");
+            durationsDiv.innerHTML = `
+                <h2>Video Durations at Different Speeds:</h2>
+                <p>Total Duration at 1x: ${formatTime(videoDuration)}</p>
+                <p>Total Duration at 1.25x: ${formatTime(videoDuration / 1.25)}</p>
+                <p>Total Duration at 1.5x: ${formatTime(videoDuration / 1.5)}</p>
+                <p>Total Duration at 1.75x: ${formatTime(videoDuration / 1.75)}</p>
+                <p>Total Duration at 2x: ${formatTime(videoDuration / 2)}</p>
+            `;
+        }
+
+        function onPlayerStateChange(event) {
+            const currentTime = player.getCurrentTime();
+            const eventType = event.data;
+
+            // If the video is playing, start tracking the time
+            if (eventType === YT.PlayerState.PLAYING) {
+                startTime = currentTime;
+                console.log("Play at:", formatTime(currentTime));
+                playEvents.push(currentTime);
+
+                // Detect if this play event is a replay (user playing an earlier section)
+                if (playEvents.length > 1) {
+                    const lastPlayTime = playEvents[playEvents.length - 2];
+                    if (currentTime < lastPlayTime - 1) { // Adding a small buffer to avoid false positives
+                        console.log(`Replay detected: User replayed from ${formatTime(lastPlayTime)} to ${formatTime(currentTime)}`);
+                        replayEvents.push({ start: currentTime, end: lastPlayTime });
+                    }
+                }
+            }
+
+            // If the video is paused, track the time spent
+            if (eventType === YT.PlayerState.PAUSED) {
+                const timeSpent = currentTime - startTime;
+                totalTimeSpent += timeSpent; // Add time spent to total
+                console.log(`Paused at: ${formatTime(currentTime)} | Time spent: ${formatTime(timeSpent)}`);
+                pauseEvents.push(currentTime);
+                displayAnalytics();
+            }
+
+            // If the video ends, show "Video Completed" and log actual time spent
+            if (eventType === YT.PlayerState.ENDED) {
+                const timeSpent = currentTime - startTime;
+                totalTimeSpent += timeSpent; // Add time spent to total
+                console.log("Video Completed!");
+                logActualTimeSpent();
+                logEvents();
+                displayAnalytics();
+            }
+        }
+
+        // Function to log the actual time spent by the user
+        function logActualTimeSpent() {
+            console.log(`Total Time Spent: ${formatTime(totalTimeSpent)}`);
+        }
+
+        // Function to log all events
+        function logEvents() {
+            console.log("Play Events:", playEvents.map(time => formatTime(time)));
+            console.log("Pause Events:", pauseEvents.map(time => formatTime(time)));
+            console.log("Replay Events:", replayEvents.map(event => `From ${formatTime(event.start)} to ${formatTime(event.end)}`));
+        }
+
+        // Function to display analytics in the UI
+        function displayAnalytics() {
+            const analyticsDiv = document.getElementById("analytics");
+            analyticsDiv.innerHTML = `
+                <h2>Analytics:</h2>
+                <p>Total Time Spent: ${formatTime(totalTimeSpent)}</p>
+                <p>Total Plays: ${playEvents.length}</p>
+                <p>Total Pauses: ${pauseEvents.length}</p>
+                <p>Total Replays: ${replayEvents.length}</p>
+            `;
+        }
+
+        // Function to format time (seconds) into HH:MM:SS format
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${hrs > 0 ? hrs + ':' : ''}${mins < 10 && hrs > 0 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Optional: Initialize the analytics display on page load
+        window.onload = function() {
+            displayAnalytics();
+        };
+    </script>
+</body>
+</html>

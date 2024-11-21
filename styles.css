@@ -1,0 +1,129 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #2D283E; /* Dark blue-gray for background */
+    color: #D1D7E0; /* Light gray for text */
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 20%;
+    background-color: #4C495D; /* Slightly lighter blue-gray for sidebar */
+    color: #D1D7E0;
+    padding: 20px;
+}
+
+.menu-btn {
+    background-color: #802BB1; /* Deep purple for menu button */
+    color: #D1D7E0;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.menu-options a {
+    display: block;
+    background-color: #564F6F; /* Dark gray-blue for menu options */
+    color: #D1D7E0; /* White text */
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    font-size: 18px;
+    text-align: center;
+}
+
+.menu-options a:hover {
+    background-color: #802BB1; /* Highlight color on hover */
+}
+
+.main-content {
+    width: 80%;
+    padding: 20px;
+    display: grid;
+    grid-template-areas:
+        "header header"
+        "timetable calendar"
+        "timetable progress-graph";
+    grid-template-rows: auto 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
+    gap: 25px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    text-align: center;
+    color: #D1D7E0;
+    grid-column: span 2;
+}
+
+.timetable {
+    grid-area: timetable;
+}
+
+.timetable .box {
+    background-color: #564F6F; /* Dark gray-blue for timetable box */
+    padding: 20px;
+    border-radius: 8px;
+    color: #D1D7E0;
+}
+
+.timetable h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.schedule {
+    background-color: #2D283E; /* Dark blue-gray for timetable content */
+    padding: 10px;
+    border-radius: 8px;
+    min-height: 500px;
+}
+
+.calendar {
+    grid-area: calendar;
+}
+
+.calendar .box {
+    background-color: #4C495D; /* Light blue-gray for calendar box */
+    padding: 20px;
+    border-radius: 8px;
+    color: #D1D7E0;
+}
+
+.calendar-content {
+    min-height: 200px;
+    background-color: #2D283E; /* Deep purple for calendar content */
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.progress-graph {
+    grid-area: progress-graph;
+}
+
+.progress-graph .box {
+    background-color: #564F6F; /* Dark gray-blue for graph box */
+    padding: 20px;
+    border-radius: 8px;
+    color: #D1D7E0;
+}
+
+.graph-content {
+    min-height: 200px;
+    background-color: #2D283E; /* Dark blue-gray for graph content */
+    border-radius: 8px;
+    padding: 10px;
+}
